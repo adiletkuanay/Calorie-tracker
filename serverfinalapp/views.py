@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-
+from .models import *
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
@@ -41,4 +41,21 @@ def user_logout(request):
 def home(request):
     if not request.user.is_authenticated:  # Проверяем, авторизован ли пользователь
         return redirect('login')  # Замените на ваш маршрут логина
-    return render(request, 'home.html')
+    if request.method == "POST":
+        food_consumed = request.POST['food_consumed']
+        consume = Food.objects.get(name=food_consumed)
+        user = request.user
+        consume = Consume(user=user, food_consumed=consume)
+        consume.save()
+        foods = Food.objects.all()
+
+    else:
+        foods = Food.objects.all()
+    consumed_food = Consume.objects.filter(user=request.user)
+    return render(request, 'home.html', {'foods': foods, 'consumed_food': consumed_food})
+def delete_consume(request, id):
+    consumed_food = Consume.objects.get(id=id)
+    if request.method == 'POST':
+        consumed_food.delete()
+        return redirect('/')
+    return render(request, 'delete.html')
