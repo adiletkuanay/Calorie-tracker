@@ -1,19 +1,36 @@
 stages:
-  - test
   - build
+  - test
   - deploy
-
-test:
-  stage: test
-  script:
-    - echo "Running tests..."
 
 build:
   stage: build
+  image: docker:20.10.7 
+  services:
+    - docker:20.10.7-dind  
   script:
-    - echo "Building project..."
+    - docker build -t myproject-backend -f backend/Dockerfile ./backend  
+    - docker build -t myproject-frontend -f frontend/Dockerfile ./frontend  
+  only:
+    - main  
+
+test:
+  stage: test
+  image: python:3.11  
+  script:
+    - pip install -r requirements.txt  
+    - python manage.py test  
+  only:
+    - main  
 
 deploy:
   stage: deploy
+  image: docker:20.10.7  
   script:
     - echo "Deploying project..."
+    - docker-compose -f docker-compose.prod.yml up -d 
+  environment:
+    name: production  
+    url: http://127.0.0.1:8000
+  only:
+    - main  
