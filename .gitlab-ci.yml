@@ -9,8 +9,7 @@ build:
   services:
     - docker:20.10.7-dind  
   script:
-    - docker build -t myproject-backend -f backend/Dockerfile ./backend  
-    - docker build -t myproject-frontend -f frontend/Dockerfile ./frontend  
+    - docker build -t serverfinal -f Dockerfile . 
   only:
     - main  
 
